@@ -1,0 +1,60 @@
+1.
+Spring Cloud Config Server pozwala nam przechowywac w jednym miejscu ( u nas GitHub)
+konfiguracje roznych komponentow, ktore beda wykorzystywane przez rozne mikroservisy.
+Kazdy mikroservice ma swoj zestaw komponentow, z ktorymi bedzie wspolpracowal poczawszy
+od bazy danych a skonczywszy na secrity. Spring Cloud Config Server pozwoli z gitHub
+odczytywac konfiguracje narzedzia, ktore bedzie potrzebne.
+
+Kiedy chcesz zeby Twoja aplikacja zaczela komunikowac sie ze Spring Cloud Config Server:
+        <dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-config</artifactId>
+		</dependency>
+U nas taka aplikacja bedzie "service".
+
+2.
+W service utworzylem AppData, ktora bede podpinal sie na poczatek pod dane z application.properties.
+W tej klasie masz zmienne do ktorych bedziemy ladowac stamtad dane. Pozniej ta klasa bedzie
+zaciagala dane bezposrednio z GitHub.
+
+3. Przechodzimy do konfiguracji Spring Cloud Server.
+
+Tworzymy nowy service o nazwie spring-cloud-config-server i dolaczamy DevTools, ConfigServer...
+W application.properties dolaczamy potrzebne ustawienia, potem Dockerfile i docker-compose.
+Uwaga ten service nie potrzebuje zeby mu wskazywac kim jest eureka-server
+Nad glowna klasa dajemy @EnableConfigServer
+
+Na GitHub przygotowac pliki: service.yaml, service-qa.yaml oraz service-dev.yaml
+W kazdym pliku niech znajda sie odpowiednie properties.
+Pozniej w application.properties tworzonego service umiesc opcje:
+spring.cloud.config.server.git.uri=https://github.com/RafalPlak/microservices-spring-cloud-config
+
+Od teraz masz dostep do zasobow poprzez urls:
+http://localhost:8888/service/default
+http://localhost:8888/service/dev
+http://localhost:8888/service/qa
+
+4.
+Ostatnia rzecz to polaczenie aplikacji z service ze spring-cloud-config-server
+ktory korzysta z github.
+
+Dodaj dependnecy:
+        <dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-config</artifactId>
+		</dependency>
+
+a. Zmiena nazwe pliku z application.properties na bootstrap.properties.
+
+b. Mozesz usunac ustawienia ktora zaciagales do AppData z bootstrap.yml
+
+c. Ustawiamy w service property:
+spring:
+  cloud:
+    config:
+      uri: http://spring-cloud-config-server:8888
+
+d. Upewnij sie ze spring-cloud-config-server byl uruchomiony w momencie
+wstawania twojej aplikacji service
+
+

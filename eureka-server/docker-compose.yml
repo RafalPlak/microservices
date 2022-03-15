@@ -1,0 +1,81 @@
+version: '3.7'
+
+services:
+
+  mysql-container:
+    image: library/mysql:latest
+    restart: always
+    ports:
+      - "3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root123
+      - MYSQL_DATABASE=test_db
+      - MYSQL_USER=app_user
+      - MYSQL_PASSWORD=test123
+    networks:
+      - microservices-network
+
+  eureka-server:
+    image: eureka-server
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8761:8761"
+    networks:
+      - microservices-network
+
+  users-service:
+    image: users-service
+    build:
+      context: ./users-service
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8100"
+    depends_on:
+      - eureka-server
+    networks:
+      - microservices-network
+
+  api-gateway:
+    image: api-gateway
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka-server
+    networks:
+      - microservices-network
+
+  service:
+    image: service
+    build:
+      context: ./service
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+    - "8200"
+    depends_on:
+      - eureka-server
+    networks:
+      - microservices-network
+
+  spring-cloud-config-server:
+    image: spring-cloud-config-server
+    build:
+      context: ./spring-cloud-config-server
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8888:8888"
+    networks:
+      - microservices-network
+
+
+networks:
+  microservices-network:

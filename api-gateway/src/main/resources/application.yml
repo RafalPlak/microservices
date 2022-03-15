@@ -1,0 +1,45 @@
+spring:
+
+  application:
+    name: api-gateway
+
+server:
+  port: 8080
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka
+  instance:
+    prefer-ip-address: true
+
+
+# konfigurujemy zuul
+zuul:
+  ignored-services: '*'
+  prefix: /api
+  routes:
+    users-service:
+      path: /users/**
+      service-id: USERS-SERVICE
+    service:
+      path: /service/**
+      service-id: SERVICE
+  host:
+    connect-timeout-millis: 1000000
+    socket-timeout-millis: 1000000
+
+
+tokens:
+  access-token:
+    expiration-time-ms: 300000
+  refresh-token:
+    expiration-time-ms: 30000000
+    token-property: access-token-expiration-time-ms
+  prefix: Bearer
+
+
+
+feign:
+  hystrix:
+    enabled: true

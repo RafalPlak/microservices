@@ -1,0 +1,39 @@
+Klopotem mikroserisow jest to ze jak jeden zacznie sypac bledy to inne
+tez przestana prawidlowo dzialac. Rozwiazaniem tego problemu jest fault tolerance
+ktory jest realziowany przez Hystrix.
+
+FAULT TOLERANCE
+
+a. Dorzucamy depednecy do service, w ktorym chcemy przechwytywac bledy i je "rozwiazywac".
+   W naszym przypadku dolaczymy je na poczatek do service.
+
+        <dependency>
+   			<groupId>org.springframework.cloud</groupId>
+   			<artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+   		</dependency>
+
+b. Nad glowna klasa mikroserwisu service umieszczamy @EnableHystrix
+
+c. W service w kontrolerze umieszczamy metody z zapasowac wartoscia zwracana.
+
+
+CIRCUIT BREAKER
+
+Czym jest wzorzec circuit breaker?
+
+Tworzony jest specjalny circuit breaker object, ktory obserwuje zdalny service.
+Jezeli ten service zaczyna rzucac bledami object zamiast wadliwego service
+daje zapasowa odpowiedz z danymi zastepczymy co podtrzymuje prace systemu.
+
+Circuit breaker ma swoj prog bledu jezeli chodzi o liczbe zgloszonych bledow z service ktory monitoruje.
+Jezeli ten prob zostanie przekroczonyu to nastepuje przejscie obiektu Circuit Breaker w stan OPEN co spowoduje
+ze od tej pory beda wysylane dane zapasowe. Kiedy uplynie pewien czas to obiekt Circuit Breaker sprawdzi czy
+ciagle sa klopoty z service i jezeli sa to wtedy bedzie ponownie przjescie w stan OPEN a jak nie to przejscie
+w stan CLOSED. Kiedy obiekt circuit breaker sprawdza czy ze stanu OPEN nie ma czasem przejsc na stan CLOSED to wtedy
+jest on w stanie HALF-OPEN.
+
+Musimy nad api-gateway ktory ma w sobie poroxy umiescic adnotacje @EnableCircuitBreaker i ta adnotacja aktywuje
+mechanizm. Dodatkowo musimy dla proxy przygotowac zapasowe zrodlo danych - klasa FindUserProxyDefault
+oraz dodac ustawienie ktore pozwoli realziwoac koncepcje circuit breaker z poziomu Feign Rest
+
+feign.hystrix.enabled=true
